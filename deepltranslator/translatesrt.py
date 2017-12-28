@@ -32,6 +32,12 @@ import deepl
 words_per_screen = [] #holds number of words on that frame of the srt file before translation
 for i in range(len(subs)): # fills words per screen with the number of words per frame
     words = subs[i].text.split(' ')
+    for word in range(len(words)):
+        words[word] = words[word].replace('\n', ' ')
+        split = words[word].split(' ')
+        if len(split) > 1:
+            words[word] = split[0]
+            words.insert(word + 1, split[1])
     words_per_screen.append(len(words))
 
 # in order to always pass complete sentences into deepl I iterate through the text of each frame until the
@@ -70,8 +76,17 @@ while sub < len(subs) - 1: #chunks sentences from period to period
 sentences.append(senetnce_to_be_translated(subs[len(subs) - 1].text, len(subs) - 1, len(subs) - 1)) #last frame
 
 for sentence in sentences:#for each complete sentence
+    sentence.text = sentence.text.split(' ')
+    for word in range(len(sentence.text)):
+        sentence.text[word] = sentence.text[word].replace('\n', ' ')
+    xyz = ''
+    for word in sentence.text:
+        xyz += word
+        xyz += ' '
+    sentence.text = xyz
     if sentence.startFrame == sentence.endFrame: # if it exists on one frame translate it and save the translated text
         translated, extra_info = deepl.translate(sentence.text, source=source_lang, target=target_lang)
+        print(len(translated))
         subs[sentence.startFrame].text = translated
     else:
         before_translated_size = len(sentence.text.split(' ')) #the number of words in the complete sentence
@@ -79,7 +94,12 @@ for sentence in sentences:#for each complete sentence
         sentence.text = translated #translate the text
         #next chunk of code changes the amount of words we will have on ech frame after if the translation has a differnet number of words than the original text
         difference = len(sentence.text.split(' ')) - before_translated_size
+        print(sentence.text.split(' '))
+        print(len(sentence.text.split(' ')), before_translated_size, difference)
         frame_counter = sentence.startFrame
+        for qwer in range(sentence.endFrame - sentence.startFrame + 1):
+            print(words_per_screen[qwer + sentence.startFrame])
+        print(' ')
         while difference != 0:
             if difference > 0:
                 words_per_screen[frame_counter] += 1
@@ -90,6 +110,10 @@ for sentence in sentences:#for each complete sentence
             frame_counter += 1
             if frame_counter > sentence.endFrame:
                 frame_counter = sentence.startFrame
+
+        for qwer in range(sentence.endFrame - sentence.startFrame + 1):
+            print(words_per_screen[qwer + sentence.startFrame])
+
 
         sentence.text = sentence.text.split(' ') #split the text into words
 
@@ -108,7 +132,11 @@ for sentence in sentences:#for each complete sentence
         # of words on each frame based on the variable words_per_screen which had just been adjusted for differences in the length of the translation
         previous_mark = 0
         for i in range(sentence.endFrame - sentence.startFrame + 1):
-            subs[sentence.startFrame + i].text = sentence.text[previous_mark: previous_mark + words_per_screen[sentence.startFrame + i]]
+            if i + sentence.startFrame == sentence.endFrame:
+                subs[sentence.startFrame + i].text = sentence.text[previous_mark: 1 + previous_mark + words_per_screen[
+                    sentence.startFrame + i]]
+            else:
+                subs[sentence.startFrame + i].text = sentence.text[previous_mark: previous_mark + words_per_screen[sentence.startFrame + i]]
             text_put_back_together = ''
             for word in subs[sentence.startFrame + i].text: # puts back together the separated words
                 text_put_back_together += word
