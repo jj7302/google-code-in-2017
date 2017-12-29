@@ -18,8 +18,8 @@ for i in range(len(arguments)):
 
 
 #for testing purposes gave the variables values
-srt_original = 'smaller.srt'
-srt_target = 'dunkirkinSPANISH.srt'
+srt_original = 'Dunkirk.2017.720p.BluRay.x264-SPARKS.srt'
+srt_target = 'fullTranslationInSpanish.srt'
 source_lang = 'EN'
 target_lang = 'ES'
 
@@ -63,6 +63,10 @@ while sub < len(subs) - 1: #chunks sentences from period to period
     to_be_translated = ''
     i = 0
     while not is_sentence:
+        print(subs[sub])
+        print(len(subs))
+        print(sub + i)
+        print(' ')
         if subs[sub + i].text[len(subs[sub + i].text) - 1] != '.' and ' ': #add a space to the end of the line if it does not already have one or end in a period
             subs[sub + i].text += ' '
         to_be_translated += subs[sub + i].text #add the newline to the text we had before
